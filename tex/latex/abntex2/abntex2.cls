@@ -1,4 +1,13 @@
-%% abntex2.cls, v<VERSION> laurocesar
+%% This class is called `setup/abntex2.cls` and not `abntex2.cls`.
+%% It was developed specially for:
+%%   1. https://github.com/evandrocoan/ufscthesisx
+%%   2. https://github.com/evandrocoan/ufscthesisx-setup
+%%
+%% Always get the latest version from:
+%%   1. https://github.com/evandroforks/abntex2/blob/master/tex/latex/abntex2/abntex2.cls
+%%   2. wget https://raw.githubusercontent.com/evandroforks/abntex2/master/tex/latex/abntex2/abntex2.cls
+%%
+%% setup/abntex2.cls, v<VERSION> laurocesar
 %% Copyright 2012-<COPYRIGHT_YEAR> by abnTeX2 group at https://www.abntex.net.br/
 %%
 %% This work may be distributed and/or modified under the
@@ -23,7 +32,7 @@
 % ------------------------------------------------------------------------
 % ------------------------------------------------------------------------
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{abntex2}[<CURRENT_DATE> v<VERSION> abnTeX2]
+\ProvidesClass{setup/abntex2}[<CURRENT_DATE> v<VERSION> abnTeX2]
 \RequirePackage{ifthen}
 %
 % Captura as options article e twocolumn
