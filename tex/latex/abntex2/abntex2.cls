@@ -141,9 +141,14 @@
 \makeatletter
 \def\renewenumerateoptionalitem{%
   \let\itemenumerateoptional\item%
+
+  % https://tex.stackexchange.com/questions/513020/how-can-i-stop-this-useless-empty-line-popping-up-in-the-middle-of-my-lists
   \renewcommand{\item}[1][]{%
-      \refstepcounter{enumerateoptionali}% increment the counter
-      \itemenumerateoptional[\bfseries##1~\theenumerateoptionali]%
+      \itemenumerateoptional[%
+        ##1~%
+        \refstepcounter{enumerateoptionali}% Advance the counter
+        \theenumerateoptionali% Print the counter
+      ]%
   }%
 }
 
@@ -154,7 +159,6 @@
     nosep,
     align=left,
     leftmargin=*,
-    after=\let\item\itemenumerateoptional,
 }
 \makeatother
 
