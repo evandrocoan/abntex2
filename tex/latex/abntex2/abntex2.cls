@@ -130,15 +130,34 @@
 \newcommand{\abntex@ifnotempty}[2]{\ifthenelse{\not\equal{#1}{}}{#2}{}}
 % ---
 
+% Define o comando \fonte que respeita as configurações de caption do memoir ou do caption
+\newcommand{\fonte}[2][\fontename]{%
+  \M@gettitle{#2}%
+  \memlegendinfo{#2}%
+  \par
+  \begingroup
+     \@parboxrestore
+     \if@minipage
+       \@setminipage
+     \fi
+     \ABNTEXfontereduzida
+     %\configureseparator
+     \captiondelim{\ABNTEXcaptionfontedelim}
+     \@makecaption{\ABNTEXfontereduzida #1}{\ignorespaces\ABNTEXfontereduzida #2}\par
+  \endgroup}
+
+% Define o comando \notas que respeita as configurações de caption do memoir ou do caption
+\newcommand{\nota}[2][\notaname]{\fonte[#1]{#2}}
+
 % ---
 % Customiza listas
 \RequirePackage[shortlabels]{enumitem}
-% ---
 
 % https://tex.stackexchange.com/questions/512413/how-to-recognize-the-enumerate-shortlabels-in-my-custom-environment
-% https://tex.stackexchange.com/questions/512692/how-to-define-commands-before-loading-the-hyperref-package-which-is-loaded-by?noredirect=1&lq=1
-% https://tex.stackexchange.com/questions/409432/conflict-between-hyperref-and-enumitem-packages-and-refstepcounter
+% https://tex.stackexchange.com/questions/512692/how-to-define-commands-before-loading-the-hyperref-package-which-is-loaded-by
 % https://tex.stackexchange.com/questions/513020/how-can-i-stop-this-useless-empty-line-popping-up-in-the-middle-of-my-lists
+\RequirePackage{xpatch}
+
 \makeatletter
 \let\enumerateoptional@item\@item
 \patchcmd\enumerateoptional@item{\if@noitemarg}{\iftrue}{}{
@@ -399,26 +418,6 @@
   }
   \let\ibgetab\IBGEtab
 }
-
-% Define o comando \fonte que respeita as configurações de caption do memoir ou do caption
-\newcommand{\fonte}[2][\fontename]{%
-  \M@gettitle{#2}%
-  \memlegendinfo{#2}%
-  \par
-  \begingroup
-     \@parboxrestore
-     \if@minipage
-       \@setminipage
-     \fi
-     \ABNTEXfontereduzida
-     %\configureseparator
-     \captiondelim{\ABNTEXcaptionfontedelim}
-     \@makecaption{\ABNTEXfontereduzida #1}{\ignorespaces\ABNTEXfontereduzida #2}\par
-  \endgroup}
-
-% Define o comando \notas que respeita as configurações de caption do memoir ou do caption
-\newcommand{\nota}[2][\notaname]{\fonte[#1]{#2}}
-
 
 % Altera os comandos \configurecaptions e \configureseparator para trabalhar com
 % o pacote caption e amigos.
