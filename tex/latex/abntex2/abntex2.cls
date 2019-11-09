@@ -33,6 +33,8 @@
 % ------------------------------------------------------------------------
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesClass{setup/abntex2}[2016/11/15 v1.9.7 setup/abntex2]
+
+\makeatletter
 \RequirePackage{ifthen}
 %
 % Captura as options article e twocolumn
@@ -140,12 +142,18 @@
      \if@minipage
        \@setminipage
      \fi
+     % https://tex.stackexchange.com/questions/23313/how-can-i-reduce-padding-after-figure
+     % \setlength{\parskip}{10pt}
+     % \setlength{\abovecaptionskip}{10pt}
+     \setlength{\belowcaptionskip}{4pt}
      \ABNTEXfontereduzida
-     %\configureseparator
      \captiondelim{\ABNTEXcaptionfontedelim}
+     % https://tex.stackexchange.com/questions/515460/misplaced-noalign-captionsetup-noalign-when-using-captionsetup-inside-mem
+     \caption@setlabelseparator{colon}%
      \@makecaption{\ABNTEXfontereduzida #1}{\ignorespaces\ABNTEXfontereduzida #2}\par
   \endgroup}
 
+ %
 % Define o comando \notas que respeita as configurações de caption do memoir ou do caption
 \newcommand{\nota}[2][\notaname]{\fonte[#1]{#2}}
 
@@ -156,29 +164,24 @@
 % https://tex.stackexchange.com/questions/512413/how-to-recognize-the-enumerate-shortlabels-in-my-custom-environment
 % https://tex.stackexchange.com/questions/512692/how-to-define-commands-before-loading-the-hyperref-package-which-is-loaded-by
 % https://tex.stackexchange.com/questions/513020/how-can-i-stop-this-useless-empty-line-popping-up-in-the-middle-of-my-lists
-\RequirePackage{xpatch}
+\RequirePackage{etoolbox}
 
-\makeatletter
-\let\enumerateoptional@item\@item
-\patchcmd\enumerateoptional@item{\if@noitemarg}{\iftrue}{}{
-  \message{^^J^^Jenumerateoptional enumitem environment could NOT be completely created!^^J^^J^^J^^J
-}}
-\enitkv@key{}{formatarg}{\def\enit@format##1{#1}}
+% https://tex.stackexchange.com/questions/514708/illegal-parameter-number-in-definition-of-enitc-after-using-setlistenumerat
+\let\@itemenumerateoptional\@item
+\patchcmd\@itemenumerateoptional{\if@noitemarg}{\iftrue}{}{\FAILEDCREATEENUMERAOPTIONAL}
+\newcommand\enumerateoptionallabelformat[1]{#1~\@itemlabel}
 
-% Compatibility with older enumitem.sty
-\@ifundefined{enitkv@enumitem@formatarg}
-  {\enitkv@key{enumitem}{formatarg}{\def\enit@format##1{#1}}}{}
-
+% https://tex.stackexchange.com/questions/88990/enumitem-revert-nolistsep
+% https://tex.stackexchange.com/questions/75578/how-to-change-list-settings-globally
+% https://tex.stackexchange.com/questions/463151/why-does-setlistnosep-doesnt-work-in-a-tabular-environment
 \newlist{enumerateoptional}{enumerate}{1}
 \setlist[enumerateoptional]{%
-    before=\let\@item\enumerateoptional@item,
-    formatarg=########1~\@itemlabel,
-    nosep,
+    before=\let\@item\@itemenumerateoptional,
+    format=\enumerateoptionallabelformat,
+    label=\arabic*,
     align=left,
     leftmargin=*,
 }
-\makeatother
-
 
 % ---
 % Controla as referencias internas do PDF
@@ -502,7 +505,6 @@
 
 % No caso de Sumario (TOC) especifico da ABNT-6027-2012
 
-\makeatletter
 \ifthenelse{\boolean{ABNTEXsumario-abnt-6027-2012}}{
   \settocpreprocessor{chapter}{%
   \let\tempf@rtoc\f@rtoc%
@@ -515,7 +517,6 @@
   \texorpdfstring{\MakeTextUppercase{\tempf@rtoc}}{\tempf@rtoc}}%
   }
 }{}
-\makeatother
 %
 \ifthenelse{\boolean{ABNTEXsumario-abnt-6027-2012}}{%
 
@@ -914,10 +915,8 @@
 % ---
 % Definicoes compartilhadas entre Apendices e Anexos
 % ---
-\makeatletter
 \newcommand\@switch[1]{ \@writefile{toc}{\renewcommand*{\cftappendixname}{#1 \space}} }
 \newcommand{\switchchapname}[1]{ \protected@write \@auxout {}{\string\@switch{#1} }}
-\makeatother
 
 \newcommand{\PRIVATEapendiceconfig}[2]{%
  \setboolean{abntex@apendiceousecao}{true}%
@@ -982,7 +981,6 @@
 }
 
 % atalhos para \partpage ou \appendixpage*
-\makeatletter
 \newcommand{\partapendices}{%
 \tocpartapendices%
 \@ifstar{\appendixpage*}{\partpage}}
@@ -990,7 +988,6 @@
 \newcommand{\partanexos}{%
 \tocpartanexos%
 \@ifstar{\appendixpage*}{\partpage}}
-\makeatother
 % ---
 
 
@@ -1008,13 +1005,17 @@
 }{% else
   \setlength{\ABNTEXcitacaorecuo}{4cm}
 }
+
+% Patch the `abntex2` citacao environment removing the extra space from its top
+% https://tex.stackexchange.com/questions/300340/topsep-itemsep-partopsep-and-parsep-what-does-each-of-them-mean-and-wha
+% https://tex.stackexchange.com/questions/82859/redefine-environment-to-be-a-synonym-for-another
 \newenvironment*{citacao}[1][default]{%
-   \list{}%
-   \ABNTEXfontereduzida%
+   \list{}{}%
    \addtolength{\leftskip}{\ABNTEXcitacaorecuo}%
    \item[]%
    \begin{SingleSpace}%
    \ifthenelse{\not\equal{#1}{default}}{\itshape\selectlanguage{#1}}{}%
+   \ABNTEXfontereduzida%
  }{%
    \end{SingleSpace}%
    \endlist}%
@@ -1047,9 +1048,7 @@
    % \assinatura*{name} -> Creates the box with the line and name under
    %     it, but the box has no position assigned. However the line and the
    %     name are centralized with respect to each other.
-\makeatletter
 \newcommand{\assinatura}{\@ifstar{\ABNTEXsign}{\ABNTEXcsign}}
-\makeatother
    % assinatura com estrela
 \newcommand{\ABNTEXsign}[1]{%
   \parbox[t]{\ABNTEXsignwidth}{\SingleSpacing\vspace*{\ABNTEXsignskip}\centering%
@@ -1101,7 +1100,6 @@
 
 % ---
 % Conteudo padrao da Folha de Rosto
-\makeatletter
 \newcommand{\folhaderostocontent}{
   \begin{center}
 
@@ -1138,7 +1136,6 @@
 
   \end{center}
 }
-\makeatother
 
 \newcommand{\imprimirfolhaderostostar}[1]{%
   \begin{folhaderosto*}{#1}
@@ -1150,11 +1147,12 @@
      \folhaderostocontent
   \end{folhaderosto}}
 
-\makeatletter
 \newcommand{\imprimirfolhaderosto}[1][\folhaderostoname]{%
    \@ifstar
      \imprimirfolhaderostostar
      \imprimirfolhaderostonostar
 }
-\makeatother
+
+
 % ---
+\makeatother
